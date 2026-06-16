@@ -280,12 +280,43 @@
   </footer>
 
   <script>
-    document.getElementById('waitlistForm').addEventListener('submit', function(e) {
+    const SUPABASE_URL = 'https://vgsvoqfkutzsrvukrjvs.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_U8lcphniYYvUSB9j69yhxg_l3v1q-fO';
+
+    const form = document.getElementById('waitlistForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
-      const email = document.getElementById('emailInput').value;
-      this.style.display = 'none';
-      document.getElementById('successMsg').style.display = 'block';
-      console.log('Waitlist signup:', email);
+      const email = document.getElementById('emailInput').value.trim();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Joining...';
+
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ email: email, source: 'waitlist_page' })
+        });
+
+        if (response.ok) {
+          form.style.display = 'none';
+          document.getElementById('successMsg').style.display = 'block';
+        } else {
+          throw new Error('Signup failed');
+        }
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Get early access';
+        alert('Something went wrong. Please try again.');
+        console.error('Waitlist signup error:', err);
+      }
     });
   </script>
 
